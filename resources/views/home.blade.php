@@ -9,7 +9,7 @@
         <div class="col-md-4">
             <div class="card mb-4">
                 <!-- Image placeholder or product image -->
-                <img src="{{ asset('storage/' . $product->image) }}" class="card-img-top" alt="{{ $product->title }}" style="height: 250px; height: 300px; object-fit: cover;">
+                <img src="{{ $product->image }}" class="card-img-top" alt="{{ $product->title }}" style="height: 250px; height: 300px; object-fit: cover;">
                 
                 <!-- Card body containing title and description -->
                 <div class="card-body">

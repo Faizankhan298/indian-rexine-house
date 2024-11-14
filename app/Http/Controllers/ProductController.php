@@ -5,11 +5,18 @@ use App\Models\Product;
 use Illuminate\Http\Request;
 
 use Illuminate\Routing\Controller as BaseController;
+use Cloudinary\Cloudinary;
 
 class ProductController extends BaseController
 {
+    protected $cloudinary;
     public function __construct()
     {
+        $this->cloudinary = new Cloudinary(['cloud'=>[
+            'cloud_name' => env('CLODUINARY_CLOUD_NAME'),
+            'api_key' => env('CLODUINARY_API_KEY'),
+            'api_secret' => env('CLODUINARY_API_SECRET'),
+        ]]);
         $this->middleware(function ($request, $next) {
             if (!session('owner_logged_in')) {
                 return redirect()->route('owner.login');
@@ -31,6 +38,7 @@ class ProductController extends BaseController
 
     public function store(Request $request)
     {
+
         $request->validate([
             'title' => 'required',
             'description' => 'required',
@@ -39,7 +47,13 @@ class ProductController extends BaseController
             'category' => 'required',
         ]);
 
-        $imagePath = $request->file('image')->store('images', 'public');
+
+        //handle image upload
+        if($request->hasFile('image')){
+            $imagePath = $this->cloudinary->uploadApi()->upload($request->file('image')->getRealPath(),[
+                'folder' => 'indian-rexine-house',
+            ])[ 'secure_url'];
+        }
 
         Product::create([
             'title' => $request->title,
@@ -67,9 +81,11 @@ class ProductController extends BaseController
             'category' => 'required',
         ]);
 
-        if ($request->hasFile('image')) {
-            $imagePath = $request->file('image')->store('images', 'public');
-            $product->image = $imagePath;
+        //handle image upload
+        if($request->hasFile('image')){
+            $imagePath = $this->cloudinary->uploadApi()->upload($request->file('image')->getRealPath(),[
+                'folder' => 'indian-rexine-house',
+            ])[ 'secure_url'];
         }
 
         $product->update([
@@ -77,6 +93,7 @@ class ProductController extends BaseController
             'description' => $request->description,
             'price' => $request->price,
             'category' => $request->category,
+            'image' => $imagePath ?? null,
         ]);
 
         return redirect()->route('products.index');
